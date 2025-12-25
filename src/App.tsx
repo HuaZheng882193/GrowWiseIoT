@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { ModuleType, SensorData, SystemStatus, LogEntry } from "./types";
-import ModuleNode from "./components/ModuleNode";
-import SimulationPanel from "./components/SimulationPanel";
+
+import React, { useState, useEffect } from 'react';
+import { ModuleType, SensorData, SystemStatus, LogEntry } from './types';
+import ModuleNode from './components/ModuleNode';
+import SimulationPanel from './components/SimulationPanel';
 
 const App: React.FC = () => {
   // State for sensors
   const [sensors, setSensors] = useState<SensorData>({
     temperature: 25,
     humidity: 45,
-    light: 500,
+    light: 500
   });
 
   // State for system status
@@ -16,7 +17,7 @@ const App: React.FC = () => {
     isPumpOn: false,
     isLightOn: false,
     isFanOn: false,
-    lastUpdate: new Date().toLocaleTimeString(),
+    lastUpdate: new Date().toLocaleTimeString()
   });
 
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -69,24 +70,13 @@ const App: React.FC = () => {
       id: Math.random().toString(36).substr(2, 9),
       module,
       message,
-      timestamp: new Date().toLocaleTimeString(),
+      timestamp: new Date().toLocaleTimeString()
     };
-    setLogs((prev) => [newLog, ...prev].slice(0, 15));
+    setLogs(prev => [newLog, ...prev].slice(0, 15));
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col p-4 md:p-8">
-      {/* Debug: Simple test to confirm React is working */}
-      <div
-        style={{
-          background: "red",
-          color: "white",
-          padding: "10px",
-          marginBottom: "20px",
-        }}
-      >
-        React is working! If you can see this, React is rendering.
-      </div>
       {/* Header */}
       <header className="mb-8 text-center">
         <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
@@ -94,15 +84,15 @@ const App: React.FC = () => {
         </h1>
         <div className="mt-2 inline-flex items-center gap-2 px-4 py-1 bg-white border border-slate-200 rounded-full shadow-sm">
           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <span className="text-xs font-medium text-slate-500 uppercase tracking-widest font-mono">
-            System Active
-          </span>
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-widest font-mono">System Active</span>
         </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-grow max-w-7xl mx-auto w-full">
+
         {/* Left Column */}
         <div className="lg:col-span-6 space-y-6">
+
           {/* IoT Elements Module (Top) */}
           <section className="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-700">
@@ -136,11 +126,9 @@ const App: React.FC = () => {
               />
             </div>
             <div className="mt-4 flex justify-between items-center px-2">
-              <div className="h-px bg-slate-100 flex-grow mx-2"></div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                物理层 ↔ 网络层 ↔ 应用层
-              </span>
-              <div className="h-px bg-slate-100 flex-grow mx-2"></div>
+               <div className="h-px bg-slate-100 flex-grow mx-2"></div>
+               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">物理层 ↔ 网络层 ↔ 应用层</span>
+               <div className="h-px bg-slate-100 flex-grow mx-2"></div>
             </div>
           </section>
 
@@ -156,25 +144,13 @@ const App: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="p-1.5 bg-blue-50 rounded-lg">💧</span>
-                    <span className="font-semibold text-slate-600">
-                      土壤湿度
-                    </span>
+                    <span className="font-semibold text-slate-600">土壤湿度</span>
                   </div>
-                  <span className="text-xl font-black text-blue-600 font-mono">
-                    {sensors.humidity}%
-                  </span>
+                  <span className="text-xl font-black text-blue-600 font-mono">{sensors.humidity}%</span>
                 </div>
                 <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={sensors.humidity}
-                  onChange={(e) =>
-                    setSensors({
-                      ...sensors,
-                      humidity: parseInt(e.target.value),
-                    })
-                  }
+                  type="range" min="0" max="100" value={sensors.humidity}
+                  onChange={(e) => setSensors({...sensors, humidity: parseInt(e.target.value)})}
                   className="w-full h-3 bg-slate-100 rounded-full appearance-none cursor-pointer accent-blue-600"
                 />
               </div>
@@ -184,22 +160,13 @@ const App: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="p-1.5 bg-yellow-50 rounded-lg">☀️</span>
-                    <span className="font-semibold text-slate-600">
-                      光照强度
-                    </span>
+                    <span className="font-semibold text-slate-600">光照强度</span>
                   </div>
-                  <span className="text-xl font-black text-yellow-600 font-mono">
-                    {sensors.light} Lux
-                  </span>
+                  <span className="text-xl font-black text-yellow-600 font-mono">{sensors.light} Lux</span>
                 </div>
                 <input
-                  type="range"
-                  min="0"
-                  max="1000"
-                  value={sensors.light}
-                  onChange={(e) =>
-                    setSensors({ ...sensors, light: parseInt(e.target.value) })
-                  }
+                  type="range" min="0" max="1000" value={sensors.light}
+                  onChange={(e) => setSensors({...sensors, light: parseInt(e.target.value)})}
                   className="w-full h-3 bg-slate-100 rounded-full appearance-none cursor-pointer accent-yellow-500"
                 />
               </div>
@@ -209,25 +176,13 @@ const App: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="p-1.5 bg-red-50 rounded-lg">🌡️</span>
-                    <span className="font-semibold text-slate-600">
-                      环境温度
-                    </span>
+                    <span className="font-semibold text-slate-600">环境温度</span>
                   </div>
-                  <span className="text-xl font-black text-red-600 font-mono">
-                    {sensors.temperature}°C
-                  </span>
+                  <span className="text-xl font-black text-red-600 font-mono">{sensors.temperature}°C</span>
                 </div>
                 <input
-                  type="range"
-                  min="0"
-                  max="50"
-                  value={sensors.temperature}
-                  onChange={(e) =>
-                    setSensors({
-                      ...sensors,
-                      temperature: parseInt(e.target.value),
-                    })
-                  }
+                  type="range" min="0" max="50" value={sensors.temperature}
+                  onChange={(e) => setSensors({...sensors, temperature: parseInt(e.target.value)})}
                   className="w-full h-3 bg-slate-100 rounded-full appearance-none cursor-pointer accent-red-500"
                 />
               </div>
@@ -237,6 +192,7 @@ const App: React.FC = () => {
 
         {/* Right Column */}
         <div className="lg:col-span-6 space-y-6 flex flex-col">
+
           {/* Simulation Visualization */}
           <div className="h-[420px] flex-shrink-0">
             <SimulationPanel sensors={sensors} status={status} />
@@ -251,98 +207,41 @@ const App: React.FC = () => {
 
             {/* Status Grid */}
             <div className="grid grid-cols-3 gap-3 mb-6">
-              <div
-                className={`p-4 rounded-2xl border transition-all flex flex-col items-center ${
-                  status.isPumpOn
-                    ? "bg-blue-50 border-blue-200"
-                    : "bg-slate-50 border-slate-100"
-                }`}
-              >
+              <div className={`p-4 rounded-2xl border transition-all flex flex-col items-center ${status.isPumpOn ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-2xl mb-1">🚿</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">
-                  水泵
-                </span>
-                <span
-                  className={`text-sm font-black ${
-                    status.isPumpOn ? "text-blue-600" : "text-slate-400"
-                  }`}
-                >
-                  {status.isPumpOn ? "正在浇水" : "已停止"}
-                </span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">水泵</span>
+                <span className={`text-sm font-black ${status.isPumpOn ? 'text-blue-600' : 'text-slate-400'}`}>{status.isPumpOn ? '正在浇水' : '已停止'}</span>
               </div>
-              <div
-                className={`p-4 rounded-2xl border transition-all flex flex-col items-center ${
-                  status.isLightOn
-                    ? "bg-yellow-50 border-yellow-200"
-                    : "bg-slate-50 border-slate-100"
-                }`}
-              >
+              <div className={`p-4 rounded-2xl border transition-all flex flex-col items-center ${status.isLightOn ? 'bg-yellow-50 border-yellow-200' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-2xl mb-1">💡</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">
-                  补光
-                </span>
-                <span
-                  className={`text-sm font-black ${
-                    status.isLightOn ? "text-yellow-600" : "text-slate-400"
-                  }`}
-                >
-                  {status.isLightOn ? "运行中" : "已关闭"}
-                </span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">补光</span>
+                <span className={`text-sm font-black ${status.isLightOn ? 'text-yellow-600' : 'text-slate-400'}`}>{status.isLightOn ? '运行中' : '已关闭'}</span>
               </div>
-              <div
-                className={`p-4 rounded-2xl border transition-all flex flex-col items-center ${
-                  status.isFanOn
-                    ? "bg-cyan-50 border-cyan-200"
-                    : "bg-slate-50 border-slate-100"
-                }`}
-              >
+              <div className={`p-4 rounded-2xl border transition-all flex flex-col items-center ${status.isFanOn ? 'bg-cyan-50 border-cyan-200' : 'bg-slate-50 border-slate-100'}`}>
                 <span className="text-2xl mb-1">🌀</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">
-                  风扇
-                </span>
-                <span
-                  className={`text-sm font-black ${
-                    status.isFanOn ? "text-cyan-600" : "text-slate-400"
-                  }`}
-                >
-                  {status.isFanOn ? "运行中" : "已停止"}
-                </span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">风扇</span>
+                <span className={`text-sm font-black ${status.isFanOn ? 'text-cyan-600' : 'text-slate-400'}`}>{status.isFanOn ? '运行中' : '已停止'}</span>
               </div>
             </div>
 
             {/* Log Terminal */}
             <div className="flex-grow flex flex-col">
               <div className="flex justify-between items-center mb-2 px-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  系统实时日志 (Real-time Logs)
-                </span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">系统实时日志 (Real-time Logs)</span>
                 <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                  <span className="text-[10px] text-green-600 font-bold">
-                    已连接
-                  </span>
+                  <span className="text-[10px] text-green-600 font-bold">已连接</span>
                 </div>
               </div>
               <div className="bg-slate-900 text-green-400 p-5 rounded-2xl font-mono text-xs overflow-y-auto h-[160px] shadow-inner border border-slate-800">
-                {logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="mb-2 border-l border-green-900 pl-3"
-                  >
-                    <span className="text-slate-500 opacity-70">
-                      [{log.timestamp.split(" ")[0]}]
-                    </span>
-                    <span className="text-blue-400 font-bold ml-2">
-                      [{log.module}]
-                    </span>
+                {logs.map(log => (
+                  <div key={log.id} className="mb-2 border-l border-green-900 pl-3">
+                    <span className="text-slate-500 opacity-70">[{log.timestamp.split(' ')[0]}]</span>
+                    <span className="text-blue-400 font-bold ml-2">[{log.module}]</span>
                     <span className="ml-2 text-slate-100">{log.message}</span>
                   </div>
                 ))}
-                {logs.length === 0 && (
-                  <div className="text-slate-600 italic">
-                    等待传感器反馈数据...
-                  </div>
-                )}
+                {logs.length === 0 && <div className="text-slate-600 italic">等待传感器反馈数据...</div>}
               </div>
             </div>
           </div>
