@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
-      base: './', // 使用相对路径以修复 GitHub Pages 上的资源加载问题
+      base: '/GrowWiseIoT/', // 使用绝对路径以适应 GitHub Pages 的子路径部署
       server: {
         port: 3000,
         host: '0.0.0.0',
