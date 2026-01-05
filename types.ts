@@ -21,7 +21,16 @@ export interface SystemStatus {
 
 export interface LogEntry {
   id: string;
-  module: ModuleType;
+  module: ModuleType | 'MQTT Broker';
   message: string;
   timestamp: string;
+}
+
+export interface MqttMessage {
+  id: string;
+  topic: string;
+  payload: string;
+  type: 'pub' | 'sub';
+  from: string;
+  to?: string;
 }
