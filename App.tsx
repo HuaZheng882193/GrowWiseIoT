@@ -40,7 +40,7 @@ const App: React.FC = () => {
       from,
       type
     };
-    setMqttMessages(prev => [msg, ...prev].slice(0, 20));
+    setMqttMessages(prev => [msg, ...prev].slice(0, 100));
     
     if (type === 'pub') {
       addLog('MQTT Broker', `收到来自 [${from}] 的消息，主题: ${topic}`);
@@ -98,6 +98,84 @@ const App: React.FC = () => {
     setMqttMessages([]);
   };
 
+  const openApiJsonInNewTab = () => {
+    const apiResponse = {
+      status: "success",
+      timestamp: new Date().toISOString(),
+      device_id: "flowerpot_001",
+      data_count: mqttMessages.length,
+      messages: mqttMessages.map(msg => ({
+        id: msg.id,
+        direction: msg.type === 'pub' ? 'inbound' : 'outbound',
+        source: msg.from,
+        topic: msg.topic,
+        payload: msg.payload
+      }))
+    };
+    
+    const jsonString = JSON.stringify(apiResponse, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
+
+  const exportMqttToExcel = () => {
+    if (mqttMessages.length === 0) return alert("暂无数据可供导出");
+
+    const headers = ["时间", "交互动作", "来源/去向模块", "业务主题(含义)", "消息详细内容"];
+    const sensorStats = { temp: [] as number[], humi: [] as number[], light: [] as number[] };
+
+    const csvContent = mqttMessages.map(msg => {
+      const time = new Date().toLocaleTimeString();
+      const typeStr = msg.type === 'pub' ? "【发布】上报数据" : "【投递】转发指令";
+      let chineseTopic = msg.topic;
+      if (msg.topic.includes('sensors')) chineseTopic = "环境数据上报 (Sensors)";
+      if (msg.topic.includes('commands')) chineseTopic = "系统控制指令 (Commands)";
+
+      let readablePayload = msg.payload;
+      try {
+        const data = JSON.parse(msg.payload);
+        if (msg.topic.includes('sensors')) {
+          readablePayload = `温度:${data.temperature}℃ | 湿度:${data.humidity}% | 光照:${data.light}`;
+          if (msg.type === 'pub') {
+            sensorStats.temp.push(data.temperature);
+            sensorStats.humi.push(data.humidity);
+            sensorStats.light.push(data.light);
+          }
+        } else if (msg.topic.includes('commands')) {
+          const cmds = [];
+          if (data.pump) cmds.push(`水泵:${data.pump === 'ON' ? '开启' : '关闭'}`);
+          if (data.light) cmds.push(`补光灯:${data.light === 'ON' ? '开启' : '关闭'}`);
+          if (data.fan) cmds.push(`风扇:${data.fan === 'ON' ? '开启' : '关闭'}`);
+          readablePayload = cmds.join("；");
+        }
+      } catch (e) {}
+
+      return [time, typeStr, msg.from, chineseTopic, `"${readablePayload}"`].join(",");
+    });
+
+    const statsSummary = [];
+    if (sensorStats.temp.length > 0) {
+      statsSummary.push("\n--- 实验数据统计汇总 ---");
+      statsSummary.push(`统计项目,最大值,最小值,单位`);
+      statsSummary.push(`环境温度,${Math.max(...sensorStats.temp)},${Math.min(...sensorStats.temp)},℃`);
+      statsSummary.push(`土壤湿度,${Math.max(...sensorStats.humi)},${Math.min(...sensorStats.humi)},%`);
+      statsSummary.push(`光照强度,${Math.max(...sensorStats.light)},${Math.min(...sensorStats.light)},Lux`);
+      statsSummary.push(`样本数量,${sensorStats.temp.length},,,次`);
+    }
+
+    const finalCsv = "\uFEFF" + [headers.join(","), ...csvContent, ...statsSummary].join("\n");
+    const blob = new Blob([finalCsv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `物联花盆_实验报表(含统计)_${new Date().toLocaleDateString()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col p-4 md:p-6 lg:p-8 font-sans">
       <header className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -121,10 +199,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow max-w-screen-2xl mx-auto w-full">
-        
-        {/* Row 1: The Interaction & Feedback Layer (Hero Section) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           <section className="bg-white p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white flex flex-col h-full">
             <div className="flex items-center gap-3 mb-8">
@@ -184,12 +259,10 @@ const App: React.FC = () => {
 
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-grow">
-            {/* Simulation Panel occupies 2 columns */}
             <div className="md:col-span-2 h-[450px]">
               <SimulationPanel sensors={sensors} status={status} />
             </div>
             
-            {/* Status Panel occupies 1 column */}
             <div className="flex flex-col gap-4">
               <div className="bg-white p-5 rounded-3xl shadow-lg border border-white flex-grow">
                 <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">实时运行状态</h3>
@@ -226,7 +299,6 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Row 2: The Logic & Data Layer (Architecture) */}
         <div className="lg:col-span-3">
           <section className="bg-white p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white h-full">
             <div className="flex items-center gap-3 mb-6">
@@ -242,8 +314,34 @@ const App: React.FC = () => {
           </section>
         </div>
 
-        <div className="lg:col-span-5">
-          <MqttBroker messages={mqttMessages} />
+        <div className="lg:col-span-5 flex flex-col gap-4">
+          {/* API Server Module */}
+          <div className="bg-white p-4 rounded-[2rem] shadow-lg border border-white flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl">🔗</div>
+              <div>
+                <h3 className="text-sm font-black text-slate-800">模拟 API 服务接口</h3>
+                <code className="text-[10px] text-slate-400">GET /api/v1/mqtt/logs</code>
+              </div>
+            </div>
+            <button 
+              onClick={openApiJsonInNewTab}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-100 transition-all flex items-center gap-2"
+            >
+              🚀 调用 API (JSON)
+            </button>
+          </div>
+
+          <div className="relative group flex-grow min-h-[400px]">
+            <MqttBroker messages={mqttMessages} />
+            <button 
+              onClick={exportMqttToExcel}
+              className="absolute top-14 right-10 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-lg transition-all active:scale-95"
+              title="将通信报文导出为包含统计信息的报表"
+            >
+              📥 导出分析报表
+            </button>
+          </div>
         </div>
 
         <div className="lg:col-span-4">
