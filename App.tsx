@@ -4,6 +4,8 @@ import { ModuleType, SensorData, SystemStatus, LogEntry, MqttMessage } from './t
 import ModuleNode from './components/ModuleNode';
 import SimulationPanel from './components/SimulationPanel';
 import MqttBroker from './components/MqttBroker';
+import DataDashboard from './components/DataDashboard';
+import AIAssistant from './components/AIAssistant';
 
 const App: React.FC = () => {
   const [sensors, setSensors] = useState<SensorData>({
@@ -377,6 +379,14 @@ const App: React.FC = () => {
               )}
             </div>
           </section>
+        </div>
+
+        {/* Data Visualization & Intelligent Decision Row */}
+        <div className="lg:col-span-8">
+          <DataDashboard currentSensors={sensors} mqttMessages={mqttMessages} logs={logs} />
+        </div>
+        <div className="lg:col-span-4">
+          <AIAssistant sensors={sensors} status={status} />
         </div>
       </div>
 
