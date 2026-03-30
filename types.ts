@@ -10,6 +10,7 @@ export interface SensorData {
   temperature: number;
   humidity: number;
   light: number;
+  forecastRain?: boolean;
 }
 
 export interface SystemStatus {

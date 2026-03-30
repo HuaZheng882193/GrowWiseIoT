@@ -169,7 +169,7 @@ export default function DataDashboard({ currentSensors, mqttMessages, logs }: Da
                 />
                 <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }} />
                 <Line type="monotone" dataKey="temperature" stroke="#ef4444" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#ef4444' }} name="温度" unit="℃" />
-                <Line type="monotone" dataKey="humidity" stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#3b82f6' }} name="湿度" unit="%" />
+                <Line type="monotone" dataKey="humidity" stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#3b82f6' }} name="湿度" unit="" />
                 <Line type="monotone" dataKey="light" stroke="#f59e0b" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#f59e0b' }} name="光照" unit="" />
               </LineChart>
             </ResponsiveContainer>

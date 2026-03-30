@@ -10,8 +10,9 @@ import AIAssistant from './components/AIAssistant';
 const App: React.FC = () => {
   const [sensors, setSensors] = useState<SensorData>({
     temperature: 25,
-    humidity: 45,
-    light: 500
+    humidity: 900,
+    light: 1000,
+    forecastRain: false
   });
 
   const [status, setStatus] = useState<SystemStatus>({
@@ -61,11 +62,28 @@ const App: React.FC = () => {
         let commandTopic = 'iot/flowerpot/commands';
         let commands: any = {};
         
-        if (sensors.humidity < 30) commands.pump = 'ON';
-        else if (sensors.humidity >= 50) commands.pump = 'OFF';
+        // --- 智能灌溉算法：逻辑与决策 ---
+        if (sensors.humidity < 1000) {
+          commands.pump = 'ON'; // 场景一：极度干燥 -> 水泵打开
+        } else {
+          if (sensors.forecastRain) {
+            commands.pump = 'OFF'; // 场景三：天气预报接雨 -> 水泵关闭, 防止积水
+          } else {
+            if (sensors.light > 1200) {
+              // 场景二：光照强烈 -> 湿度下限提升至 1500，提前触发灌溉
+              if (sensors.humidity < 1500) {
+                commands.pump = 'ON';
+              } else {
+                commands.pump = 'OFF';
+              }
+            } else {
+              commands.pump = 'OFF'; // 默认关闭水泵
+            }
+          }
+        }
         
-        if (sensors.light < 200) commands.light = 'ON';
-        else if (sensors.light > 600) commands.light = 'OFF';
+        if (sensors.light < 500) commands.light = 'ON';
+        else if (sensors.light > 1500) commands.light = 'OFF';
         
         if (sensors.temperature > 30) commands.fan = 'ON';
         else if (sensors.temperature <= 27) commands.fan = 'OFF';
@@ -138,7 +156,7 @@ const App: React.FC = () => {
       try {
         const data = JSON.parse(msg.payload);
         if (msg.topic.includes('sensors')) {
-          readablePayload = `温度:${data.temperature}℃ | 湿度:${data.humidity}% | 光照:${data.light}`;
+          readablePayload = `温度:${data.temperature}℃ | 湿度:${data.humidity} | 光照:${data.light}`;
           if (msg.type === 'pub') {
             sensorStats.temp.push(data.temperature);
             sensorStats.humi.push(data.humidity);
@@ -161,8 +179,8 @@ const App: React.FC = () => {
       statsSummary.push("\n--- 实验数据统计汇总 ---");
       statsSummary.push(`统计项目,最大值,最小值,单位`);
       statsSummary.push(`环境温度,${Math.max(...sensorStats.temp)},${Math.min(...sensorStats.temp)},℃`);
-      statsSummary.push(`土壤湿度,${Math.max(...sensorStats.humi)},${Math.min(...sensorStats.humi)},%`);
-      statsSummary.push(`光照强度,${Math.max(...sensorStats.light)},${Math.min(...sensorStats.light)},Lux`);
+      statsSummary.push(`土壤湿度,${Math.max(...sensorStats.humi)},${Math.min(...sensorStats.humi)},模拟量`);
+      statsSummary.push(`光照强度,${Math.max(...sensorStats.light)},${Math.min(...sensorStats.light)},模拟量`);
       statsSummary.push(`样本数量,${sensorStats.temp.length},,,次`);
     }
 
@@ -213,12 +231,12 @@ const App: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> 土壤湿度
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> 土壤湿度 (模拟量)
                   </span>
-                  <span className="text-2xl font-black text-blue-600 font-mono">{sensors.humidity}%</span>
+                  <span className="text-2xl font-black text-blue-600 font-mono">{sensors.humidity}</span>
                 </div>
                 <input 
-                  type="range" min="0" max="100" value={sensors.humidity}
+                  type="range" min="0" max="4000" value={sensors.humidity}
                   onChange={(e) => setSensors({...sensors, humidity: parseInt(e.target.value)})}
                   className="w-full h-2.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-blue-600"
                 />
@@ -227,15 +245,40 @@ const App: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span> 光照强度
+                    <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span> 光照强度 (模拟量)
                   </span>
                   <span className="text-2xl font-black text-yellow-600 font-mono">{sensors.light}</span>
                 </div>
                 <input 
-                  type="range" min="0" max="1000" value={sensors.light}
+                  type="range" min="0" max="4000" value={sensors.light}
                   onChange={(e) => setSensors({...sensors, light: parseInt(e.target.value)})}
                   className="w-full h-2.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-yellow-500"
                 />
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span> 天气预报 (API)
+                  </span>
+                  <span className={`text-xl font-black font-mono ${sensors.forecastRain ? 'text-indigo-600' : 'text-slate-400'}`}>
+                    {sensors.forecastRain ? '🌧️ 预报有雨' : '☀️ 晴朗'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                  <button 
+                    onClick={() => setSensors({...sensors, forecastRain: false})}
+                    className={`flex-1 py-1.5 rounded-xl text-sm font-bold transition-all ${!sensors.forecastRain ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    无雨
+                  </button>
+                  <button 
+                    onClick={() => setSensors({...sensors, forecastRain: true})}
+                    className={`flex-1 py-1.5 rounded-xl text-sm font-bold transition-all ${sensors.forecastRain ? 'bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    有雨
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-4">
