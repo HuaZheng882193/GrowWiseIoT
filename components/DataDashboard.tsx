@@ -163,14 +163,23 @@ export default function DataDashboard({ currentSensors, mqttMessages, logs }: Da
                   minTickGap={30}
                 />
                 <YAxis 
+                  yAxisId="left"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }}
                 />
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 9, fill: '#ef4444', fontWeight: 600 }}
+                  domain={['dataMin - 5', 'dataMax + 5']}
+                />
                 <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }} />
-                <Line type="monotone" dataKey="temperature" stroke="#ef4444" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#ef4444' }} name="温度" unit="℃" />
-                <Line type="monotone" dataKey="humidity" stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#3b82f6' }} name="湿度" unit="" />
-                <Line type="monotone" dataKey="light" stroke="#f59e0b" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#f59e0b' }} name="光照" unit="" />
+                <Line yAxisId="right" type="monotone" dataKey="temperature" stroke="#ef4444" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#ef4444' }} name="温度" unit="℃" />
+                <Line yAxisId="left" type="monotone" dataKey="humidity" stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#3b82f6' }} name="湿度" unit="" />
+                <Line yAxisId="left" type="monotone" dataKey="light" stroke="#f59e0b" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#f59e0b' }} name="光照" unit="" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -226,25 +235,32 @@ export default function DataDashboard({ currentSensors, mqttMessages, logs }: Da
               <div className="absolute inset-0 bg-grid-blue-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.4))] -z-10"></div>
               {wordCloudWords.length > 0 ? wordCloudWords.map((w, i) => {
                 const categoryStyles: Record<string, string> = {
-                  pump: 'bg-blue-500 text-white border-blue-400 shadow-blue-100',
-                  fan: 'bg-cyan-500 text-white border-cyan-400 shadow-cyan-100',
-                  light: 'bg-amber-500 text-white border-amber-400 shadow-amber-100'
+                  pump: 'text-blue-500 drop-shadow-md',
+                  fan: 'text-cyan-500 drop-shadow-md',
+                  light: 'text-amber-500 drop-shadow-md'
                 };
+                
+                // Words that appear more frequently will be much larger.
+                const fontSize = Math.min(14 + w.value * 5, 42); 
+                // Add some slight random rotation for the authentic word cloud feel
+                const rotation = Math.random() > 0.5 ? (Math.random() * 10 - 5) : 0;
                 
                 return (
                   <div 
                     key={i}
                     className={`
-                      relative px-4 py-2 rounded-2xl border font-black transition-all hover:scale-110 cursor-default shadow-sm 
-                      flex items-center gap-2 animate-slow-float
-                      ${categoryStyles[w.category] || 'bg-slate-50 text-slate-500'}
+                      relative font-black transition-all hover:scale-110 cursor-default select-none
+                      flex items-center justify-center animate-slow-float
+                      ${categoryStyles[w.category] || 'text-slate-500'}
                     `}
-                    style={{ animationDelay: `${i * 0.5}s` }}
+                    style={{ 
+                      animationDelay: `${i * 0.3}s`, 
+                      fontSize: `${fontSize}px`,
+                      lineHeight: '1',
+                      transform: `rotate(${rotation}deg)` 
+                    }}
                   >
-                    <span className="text-[13px]">{w.text}</span>
-                    <span className="text-[9px] bg-white text-slate-800 px-1.5 py-0.5 rounded-full shadow-sm font-black min-w-[1.25rem] text-center">
-                      {w.value}
-                    </span>
+                    {w.text}
                   </div>
                 );
               }) : (
